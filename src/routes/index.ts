@@ -1,0 +1,17 @@
+import { Router } from 'express';
+import auth from './v1/auth.routes.js';
+import posts from './v1/posts.routes.js';
+import uploads from './v1/uploads.routes.js';
+import payments from './v1/payments.routes.js';
+import admin from './v1/admin.routes.js';
+
+export const router = Router();
+router.get('/v1/health', (_req, res) => res.json({ status: 'ok' }));
+router.use('/v1', auth);
+router.use('/v1', posts);
+router.use('/v1', uploads);
+router.use('/v1', payments);
+router.use('/v1', admin);
+
+
+

@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(uuid())
+  name          String
+  email         String        @unique
+  passwordHash  String
+  role          Role          @default(READER)
+  posts         Post[]
+  refreshTokens RefreshToken[]
+  createdAt     DateTime      @default(now())
+}
+
+model Post {
+  id               String        @id @default(uuid())
+  title            String
+  slug             String        @unique
+  contentMarkdown  String
+  excerpt          String?
+  featuredImageUrl String?
+  tags             String[]
+  category         String?
+  status           PostStatus    @default(DRAFT)
+  publishedAt      DateTime?
+  authorId         String
+  author           User          @relation(fields: [authorId], references: [id])
+  transactions     Transaction[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model Transaction {
+  id                 String    @id @default(uuid())
+  postId             String?
+  post               Post?     @relation(fields: [postId], references: [id])
+  phone              String
+  amount             Int
+  checkoutRequestId  String    @unique
+  merchantRequestId  String
+  mpesaReceiptNumber String?
+  status             TxStatus  @default(PENDING)
+  rawResponse        Json?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  tokenHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  READER
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum TxStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+
+
