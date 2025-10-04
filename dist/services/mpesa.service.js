@@ -56,24 +56,26 @@ export class MpesaService {
             const timestamp = this.generateTimestamp();
             const password = this.generatePassword();
             const payload = {
-                BusinessShortCode: this.shortcode,
+                BusinessShortCode: parseInt(this.shortcode),
                 Password: password,
                 Timestamp: timestamp,
                 TransactionType: 'CustomerPayBillOnline',
                 Amount: request.amount,
                 PartyA: request.phone,
-                PartyB: this.shortcode,
+                PartyB: parseInt(this.shortcode),
                 PhoneNumber: request.phone,
-                CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://your-domain.com/api/v1/mpesa/callback',
+                CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://caffeinated-thoughts-backend.onrender.com/api/v1/mpesa/callback',
                 AccountReference: request.accountReference,
                 TransactionDesc: request.transactionDesc,
             };
+            console.log('STK Push payload:', JSON.stringify(payload, null, 2));
             const response = await axios.post(`${this.baseURL}/mpesa/stkpush/v1/processrequest`, payload, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     'Content-Type': 'application/json',
                 },
             });
+            console.log('M-Pesa STK Push response:', JSON.stringify(response.data, null, 2));
             const { ResponseCode, ResponseDescription, CheckoutRequestID, MerchantRequestID } = response.data;
             if (ResponseCode === '0') {
                 return {
@@ -109,7 +111,7 @@ export class MpesaService {
             const timestamp = this.generateTimestamp();
             const password = this.generatePassword();
             const payload = {
-                BusinessShortCode: this.shortcode,
+                BusinessShortCode: parseInt(this.shortcode),
                 Password: password,
                 Timestamp: timestamp,
                 CheckoutRequestID: checkoutRequestId,
