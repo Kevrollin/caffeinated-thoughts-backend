@@ -24,12 +24,12 @@ export const PaymentsController = {
         shortcode: process.env.MPESA_SHORTCODE,
         callbackUrl: process.env.MPESA_CALLBACK_URL,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('M-Pesa credentials test failed:', error);
       return res.status(400).json({
         error: {
           message: 'M-Pesa credentials test failed',
-          details: error.message,
+          details: error?.message || 'Unknown error',
         },
       });
     }
