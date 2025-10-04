@@ -56,7 +56,7 @@ export function createServer() {
     standardHeaders: true,
     legacyHeaders: false,
   });
-  app.use('/auth', authLimiter);
+  app.use('/api/v1/auth', authLimiter);
 
   // Serve static files from public directory
   app.use('/assets', express.static(path.join(__dirname, '../public')));

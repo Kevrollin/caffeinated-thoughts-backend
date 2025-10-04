@@ -27,6 +27,36 @@ function parseRefreshTtlMs(ttl: string): number {
 }
 
 export const AuthController = {
+  // Temporary endpoint to create admin user
+  createAdmin: async (req: Request, res: Response) => {
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL || 'kelvinmukaria2023@gmail.com';
+      const adminPassword = process.env.ADMIN_PASSWORD || 'Kevdev@2025';
+      
+      // Check if admin already exists
+      const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
+      if (existing) {
+        return res.json({ message: 'Admin user already exists', user: existing });
+      }
+      
+      // Create admin user
+      const passwordHash = await bcrypt.hash(adminPassword, 12);
+      const admin = await prisma.user.create({
+        data: {
+          name: 'Admin',
+          email: adminEmail,
+          passwordHash,
+          role: 'ADMIN',
+        },
+      });
+      
+      return res.json({ message: 'Admin user created successfully', user: admin });
+    } catch (error) {
+      console.error('Error creating admin user:', error);
+      return res.status(500).json({ error: { message: 'Failed to create admin user', code: 'INTERNAL_ERROR' } });
+    }
+  },
+
   login: async (req: Request, res: Response) => {
     const { email, password } = req.body as { email: string; password: string };
     if (!email || !password) return res.status(400).json({ error: { message: 'Email and password required', code: 'BAD_REQUEST' } });
