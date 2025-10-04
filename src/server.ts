@@ -33,7 +33,11 @@ export function createServer() {
     cors({
       origin: process.env.CORS_ORIGIN
         ? process.env.CORS_ORIGIN.split(',')
-        : ["http://localhost:8080"], // fallback for dev
+        : [
+            "http://localhost:8080", // local dev
+            "https://caffeinated-thoughts-five.vercel.app", // Vercel frontend
+            "http://localhost:3000" // local frontend fallback
+          ],
       credentials: true,
     })
   );
