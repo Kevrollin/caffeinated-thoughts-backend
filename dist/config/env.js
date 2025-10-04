@@ -25,4 +25,8 @@ export const env = {
         callbackUrl: process.env.MPESA_CALLBACK_URL || 'http://localhost:4000/api/v1/mpesa/callback',
         minAmount: Number(process.env.MIN_COFFEE_AMOUNT || 50),
     },
+    admin: {
+        email: process.env.ADMIN_EMAIL || 'admin@example.com',
+        password: process.env.ADMIN_PASSWORD || 'changemeStrong!1',
+    },
 };
