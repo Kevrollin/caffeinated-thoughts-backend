@@ -37,7 +37,7 @@ export class MpesaService {
     this.environment = (process.env.MPESA_ENV as 'sandbox' | 'production') || 'sandbox';
   }
 
-  private async getAccessToken(): Promise<string> {
+  async getAccessToken(): Promise<string> {
     // Check if we have a valid cached token
     if (this.accessToken && Date.now() < this.tokenExpiry) {
       return this.accessToken;

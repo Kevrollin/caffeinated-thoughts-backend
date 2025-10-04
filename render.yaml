@@ -34,7 +34,7 @@ services:
       - key: MPESA_PASSKEY
         sync: false
       - key: MPESA_CALLBACK_URL
-        sync: false
+        value: https://caffeinated-thoughts-backend.onrender.com/api/v1/mpesa/callback
       - key: MIN_COFFEE_AMOUNT
         value: 50
       - key: CORS_ORIGIN

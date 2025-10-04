@@ -10,6 +10,31 @@ const stkPushSchema = z.object({
 });
 
 export const PaymentsController = {
+  // Test M-Pesa credentials
+  testMpesaCredentials: async (req: Request, res: Response) => {
+    try {
+      const mpesaService = new MpesaService();
+      const accessToken = await mpesaService.getAccessToken();
+      
+      return res.json({
+        success: true,
+        message: 'M-Pesa credentials are valid',
+        hasAccessToken: !!accessToken,
+        environment: process.env.MPESA_ENV,
+        shortcode: process.env.MPESA_SHORTCODE,
+        callbackUrl: process.env.MPESA_CALLBACK_URL,
+      });
+    } catch (error) {
+      console.error('M-Pesa credentials test failed:', error);
+      return res.status(400).json({
+        error: {
+          message: 'M-Pesa credentials test failed',
+          details: error.message,
+        },
+      });
+    }
+  },
+
   stkPush: async (req: Request, res: Response) => {
     try {
       console.log('STK Push request received:', req.body);
