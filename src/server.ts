@@ -22,9 +22,12 @@ export function createServer() {
   app.use(requestId());
   app.use(helmet());
   app.use((req, _res, next) => {
-    console.log("Incoming Origin:", req.headers.origin);
-    next();
-  });
+  if (req.headers.origin) {
+    console.log("🌍 Incoming Origin:", req.headers.origin);
+  }
+  next();
+});
+
   
   app.use(
     cors({
@@ -57,6 +60,10 @@ export function createServer() {
   app.use('/api', apiRouter);
   app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));
   app.get('/api/v1/openapi.json', (_req, res) => res.json(openapiSpec));
+  app.get("/healthz", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 
   app.use(notFoundHandler);
   app.use(errorHandler);
