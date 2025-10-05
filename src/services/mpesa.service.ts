@@ -84,18 +84,38 @@ export class MpesaService {
         };
       }
 
+      // Validate phone number format
+      if (!this.isValidPhoneNumber(request.phone)) {
+        return {
+          success: false,
+          error: 'Invalid phone number format. Please use a valid Kenyan phone number.',
+        };
+      }
+
+      // Validate amount
+      if (request.amount < 1 || request.amount > 70000) {
+        return {
+          success: false,
+          error: 'Invalid amount. Amount must be between 1 and 70,000 KES.',
+        };
+      }
+
       const accessToken = await this.getAccessToken();
       const timestamp = this.generateTimestamp();
       const password = this.generatePassword();
 
+      // Use the correct business shortcode for STK Push
+      // For STK Push, we typically use a different shortcode than the one for other operations
+      const businessShortCode = this.getBusinessShortCode();
+
       const payload = {
-        BusinessShortCode: parseInt(this.shortcode),
+        BusinessShortCode: businessShortCode,
         Password: password,
         Timestamp: timestamp,
         TransactionType: 'CustomerPayBillOnline',
         Amount: request.amount,
         PartyA: request.phone,
-        PartyB: parseInt(this.shortcode),
+        PartyB: businessShortCode,
         PhoneNumber: request.phone,
         CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://caffeinated-thoughts-backend.onrender.com/api/v1/mpesa/callback',
         AccountReference: request.accountReference,
@@ -103,6 +123,8 @@ export class MpesaService {
       };
 
       console.log('STK Push payload:', JSON.stringify(payload, null, 2));
+      console.log('Using business shortcode:', businessShortCode);
+      console.log('Environment:', this.environment);
 
       const response = await axios.post(
         `${this.baseURL}/mpesa/stkpush/v1/processrequest`,
@@ -112,6 +134,7 @@ export class MpesaService {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
+          timeout: 30000, // 30 second timeout
         }
       );
 
@@ -125,6 +148,7 @@ export class MpesaService {
           merchantRequestId: MerchantRequestID,
         };
       } else {
+        console.error('M-Pesa STK Push failed:', { ResponseCode, ResponseDescription });
         return {
           success: false,
           error: ResponseDescription,
@@ -134,17 +158,47 @@ export class MpesaService {
       console.error('STK Push error:', error);
       
       if (error.response?.data) {
+        console.error('M-Pesa API error response:', error.response.data);
         return {
           success: false,
-          error: error.response.data.errorMessage || 'STK Push failed',
+          error: error.response.data.errorMessage || error.response.data.error_description || 'STK Push failed',
+        };
+      }
+
+      if (error.code === 'ECONNABORTED') {
+        return {
+          success: false,
+          error: 'Request timeout. Please try again.',
         };
       }
 
       return {
         success: false,
-        error: 'Network error occurred',
+        error: 'Network error occurred. Please check your connection and try again.',
       };
     }
+  }
+
+  private isValidPhoneNumber(phone: string): boolean {
+    // Remove any non-digit characters
+    const cleaned = phone.replace(/\D/g, '');
+    
+    // Check if it's a valid Kenyan phone number
+    // Should start with 254 and be 12 digits total
+    return /^254[17]\d{8}$/.test(cleaned);
+  }
+
+  private getBusinessShortCode(): number {
+    // For STK Push, we might need to use a different shortcode
+    // Check if there's a specific STK Push shortcode configured
+    const stkShortcode = process.env.MPESA_STK_SHORTCODE;
+    
+    if (stkShortcode) {
+      return parseInt(stkShortcode);
+    }
+    
+    // Fallback to the main shortcode
+    return parseInt(this.shortcode);
   }
 
   async querySTKPushStatus(checkoutRequestId: string): Promise<any> {
