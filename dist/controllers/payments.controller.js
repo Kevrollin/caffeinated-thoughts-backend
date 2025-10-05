@@ -130,9 +130,13 @@ export const PaymentsController = {
     },
     callback: async (req, res) => {
         try {
+            console.log('=== M-PESA CALLBACK RECEIVED ===');
+            console.log('Full request body:', JSON.stringify(req.body, null, 2));
+            console.log('Request headers:', req.headers);
             const { Body } = req.body;
             const stkCallback = Body.stkCallback;
             if (!stkCallback) {
+                console.error('Invalid callback data - no stkCallback found');
                 return res.status(400).json({ error: { message: 'Invalid callback data' } });
             }
             const { CheckoutRequestID, ResultCode, ResultDesc, CallbackMetadata } = stkCallback;
