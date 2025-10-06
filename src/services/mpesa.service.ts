@@ -13,6 +13,7 @@ interface STKPushResponse {
   checkoutRequestId?: string;
   merchantRequestId?: string;
   error?: string;
+  responseCode?: string;
 }
 
 export class MpesaService {
@@ -112,7 +113,7 @@ export class MpesaService {
         BusinessShortCode: businessShortCode,
         Password: password,
         Timestamp: timestamp,
-        TransactionType: 'CustomerPayBillOnline',
+        TransactionType: 'CustomerBuyGoodsOnline',
         Amount: request.amount,
         PartyA: request.phone,
         PartyB: businessShortCode,
@@ -122,9 +123,16 @@ export class MpesaService {
         TransactionDesc: request.transactionDesc,
       };
 
+      console.log('=== STK PUSH DETAILED LOGGING ===');
       console.log('STK Push payload:', JSON.stringify(payload, null, 2));
       console.log('Using business shortcode:', businessShortCode);
       console.log('Environment:', this.environment);
+      console.log('Phone number:', request.phone);
+      console.log('Amount:', request.amount);
+      console.log('Account Reference:', request.accountReference);
+      console.log('Transaction Description:', request.transactionDesc);
+      console.log('Callback URL:', payload.CallBackURL);
+      console.log('==================================');
 
       const response = await axios.post(
         `${this.baseURL}/mpesa/stkpush/v1/processrequest`,
@@ -148,10 +156,29 @@ export class MpesaService {
           merchantRequestId: MerchantRequestID,
         };
       } else {
-        console.error('M-Pesa STK Push failed:', { ResponseCode, ResponseDescription });
+        console.error('=== M-PESA STK PUSH FAILED ===');
+        console.error('Response Code:', ResponseCode);
+        console.error('Response Description:', ResponseDescription);
+        console.error('Business ShortCode Used:', businessShortCode);
+        console.error('Transaction Type:', payload.TransactionType);
+        console.error('Phone Number:', request.phone);
+        console.error('Amount:', request.amount);
+        console.error('===============================');
+        
+        // Provide more specific error messages for common issues
+        let errorMessage = ResponseDescription;
+        if (ResponseCode === '1') {
+          errorMessage = 'Till number not found or not configured for STK Push';
+        } else if (ResponseCode === '2') {
+          errorMessage = 'Till number not active or suspended';
+        } else if (ResponseCode === '3') {
+          errorMessage = 'Invalid phone number format';
+        }
+        
         return {
           success: false,
-          error: ResponseDescription,
+          error: errorMessage,
+          responseCode: ResponseCode,
         };
       }
     } catch (error: any) {
@@ -245,5 +272,38 @@ export class MpesaService {
       success: true,
       checkoutRequestId: mockCheckoutRequestId,
     };
+  }
+
+  // Diagnostic method to test Till number configuration
+  async testTillConfiguration(): Promise<any> {
+    try {
+      const businessShortCode = this.getBusinessShortCode();
+      const accessToken = await this.getAccessToken();
+      
+      console.log('=== TILL CONFIGURATION TEST ===');
+      console.log('Business ShortCode:', businessShortCode);
+      console.log('Environment:', this.environment);
+      console.log('Access Token Status:', accessToken ? 'Valid' : 'Invalid');
+      console.log('STK Shortcode:', process.env.MPESA_STK_SHORTCODE || 'Not set (using main shortcode)');
+      console.log('Main Shortcode:', this.shortcode);
+      console.log('===============================');
+
+      return {
+        success: true,
+        businessShortCode,
+        environment: this.environment,
+        accessTokenValid: !!accessToken,
+        stkShortcode: process.env.MPESA_STK_SHORTCODE || 'Not set',
+        mainShortcode: this.shortcode,
+        transactionType: 'CustomerBuyGoodsOnline',
+        callbackUrl: process.env.MPESA_CALLBACK_URL || 'https://caffeinated-thoughts-backend.onrender.com/api/v1/mpesa/callback',
+      };
+    } catch (error: any) {
+      console.error('Till configuration test failed:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 }

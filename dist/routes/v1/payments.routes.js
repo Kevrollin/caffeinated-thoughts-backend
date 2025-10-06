@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { PaymentsController } from '../../controllers/payments.controller.js';
 export default Router()
     .get('/payments/test-mpesa', PaymentsController.testMpesaCredentials)
+    .get('/payments/test-till', PaymentsController.testTillConfiguration)
     .post('/payments/test-phone', PaymentsController.testPhoneNumber)
     .post('/payments/diagnostics', PaymentsController.diagnostics)
     .post('/payments/stkpush', PaymentsController.stkPush)

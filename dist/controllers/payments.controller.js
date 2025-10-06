@@ -84,6 +84,27 @@ export const PaymentsController = {
             });
         }
     },
+    // Test Till number configuration specifically
+    testTillConfiguration: async (req, res) => {
+        try {
+            const mpesaService = new MpesaService();
+            const result = await mpesaService.testTillConfiguration();
+            return res.json({
+                success: true,
+                message: 'Till configuration test completed',
+                data: result,
+            });
+        }
+        catch (error) {
+            console.error('Till configuration test failed:', error);
+            return res.status(500).json({
+                error: {
+                    message: 'Till configuration test failed',
+                    details: error?.message || 'Unknown error',
+                },
+            });
+        }
+    },
     // Comprehensive M-Pesa diagnostics
     diagnostics: async (req, res) => {
         try {
