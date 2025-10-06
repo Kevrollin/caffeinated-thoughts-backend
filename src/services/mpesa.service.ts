@@ -112,7 +112,7 @@ export class MpesaService {
         BusinessShortCode: businessShortCode,
         Password: password,
         Timestamp: timestamp,
-        TransactionType: 'CustomerPayBillOnline',
+        TransactionType: 'CustomerBuyGoodsOnline',
         Amount: request.amount,
         PartyA: request.phone,
         PartyB: businessShortCode,

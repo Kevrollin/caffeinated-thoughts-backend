@@ -6,5 +6,3 @@ export default Router()
   .post('/auth/refresh', AuthController.refresh)
   .post('/auth/logout', AuthController.logout);
 
-
-
