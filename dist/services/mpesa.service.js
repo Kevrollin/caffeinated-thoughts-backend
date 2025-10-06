@@ -76,7 +76,7 @@ export class MpesaService {
                 BusinessShortCode: businessShortCode,
                 Password: password,
                 Timestamp: timestamp,
-                TransactionType: 'CustomerBuyGoodsOnline',
+                TransactionType: 'CustomerPayBillOnline',
                 Amount: request.amount,
                 PartyA: request.phone,
                 PartyB: businessShortCode,
@@ -143,7 +143,7 @@ export class MpesaService {
     getBusinessShortCode() {
         // For STK Push, we might need to use a different shortcode
         // Check if there's a specific STK Push shortcode configured
-        const stkShortcode = process.env.MPESA_SHORTCODE;
+        const stkShortcode = process.env.MPESA_STK_SHORTCODE;
         if (stkShortcode) {
             return parseInt(stkShortcode);
         }
