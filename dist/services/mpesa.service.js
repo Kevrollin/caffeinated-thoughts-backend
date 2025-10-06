@@ -69,10 +69,10 @@ export class MpesaService {
             const accessToken = await this.getAccessToken();
             const timestamp = this.generateTimestamp();
             const password = this.generatePassword();
-            // For Till STK Push, BusinessShortCode and PartyB MUST be the same Till number
+            // For Till STK Push,
             const tillNumber = 6052176;
             const payload = {
-                BusinessShortCode: tillNumber,
+                BusinessShortCode: process.env.MPESA_SHORTCODE,
                 Password: password,
                 Timestamp: timestamp,
                 TransactionType: 'CustomerBuyGoodsOnline', // Correct for Tills
