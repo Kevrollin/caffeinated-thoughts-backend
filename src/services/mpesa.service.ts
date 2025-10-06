@@ -106,7 +106,7 @@ export class MpesaService {
       const password = this.generatePassword();
   
       // For Till STK Push, BusinessShortCode and PartyB MUST be the same Till number
-      const tillNumber = parseInt(this.getBusinessShortCode().toString());
+      const tillNumber = 6052176;
   
       const payload = {
         BusinessShortCode: tillNumber,
