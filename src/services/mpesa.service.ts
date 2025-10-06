@@ -107,16 +107,17 @@ export class MpesaService {
 
       // Use the correct business shortcode for STK Push
       // For STK Push, we typically use a different shortcode than the one for other operations
-      const businessShortCode = this.getBusinessShortCode();
+      const businessShortCode = this.getBusinessShortCode(); // Agent Number
+      const storeNumber = this.getStoreNumber(); // Store Number
 
       const payload = {
-        BusinessShortCode: businessShortCode,
+        BusinessShortCode: businessShortCode, // Agent Number
         Password: password,
         Timestamp: timestamp,
         TransactionType: 'CustomerBuyGoodsOnline',
         Amount: request.amount,
         PartyA: request.phone,
-        PartyB: businessShortCode,
+        PartyB: storeNumber, // Store Number (can be different from Agent Number)
         PhoneNumber: request.phone,
         CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://caffeinated-thoughts-backend.onrender.com/api/v1/mpesa/callback',
         AccountReference: request.accountReference,
@@ -125,7 +126,8 @@ export class MpesaService {
 
       console.log('=== STK PUSH DETAILED LOGGING ===');
       console.log('STK Push payload:', JSON.stringify(payload, null, 2));
-      console.log('Using business shortcode:', businessShortCode);
+      console.log('Agent Number (BusinessShortCode):', businessShortCode);
+      console.log('Store Number (PartyB):', storeNumber);
       console.log('Environment:', this.environment);
       console.log('Phone number:', request.phone);
       console.log('Amount:', request.amount);
@@ -159,7 +161,8 @@ export class MpesaService {
         console.error('=== M-PESA STK PUSH FAILED ===');
         console.error('Response Code:', ResponseCode);
         console.error('Response Description:', ResponseDescription);
-        console.error('Business ShortCode Used:', businessShortCode);
+        console.error('Agent Number (BusinessShortCode):', businessShortCode);
+        console.error('Store Number (PartyB):', storeNumber);
         console.error('Transaction Type:', payload.TransactionType);
         console.error('Phone Number:', request.phone);
         console.error('Amount:', request.amount);
@@ -173,6 +176,8 @@ export class MpesaService {
           errorMessage = 'Till number not active or suspended';
         } else if (ResponseCode === '3') {
           errorMessage = 'Invalid phone number format';
+        } else if (ResponseCode === '2002') {
+          errorMessage = 'Agent number and Store number mismatch. Please verify your Till number configuration.';
         }
         
         return {
@@ -228,6 +233,19 @@ export class MpesaService {
     return parseInt(this.shortcode);
   }
 
+  private getStoreNumber(): number {
+    // For Till numbers, Store number might be different from Agent number
+    // Check if there's a specific store number configured
+    const storeNumber = process.env.MPESA_STORE_NUMBER;
+    
+    if (storeNumber) {
+      return parseInt(storeNumber);
+    }
+    
+    // Fallback to the same as business shortcode (Agent number)
+    return this.getBusinessShortCode();
+  }
+
   async querySTKPushStatus(checkoutRequestId: string): Promise<any> {
     try {
       const accessToken = await this.getAccessToken();
@@ -277,23 +295,28 @@ export class MpesaService {
   // Diagnostic method to test Till number configuration
   async testTillConfiguration(): Promise<any> {
     try {
-      const businessShortCode = this.getBusinessShortCode();
+      const businessShortCode = this.getBusinessShortCode(); // Agent Number
+      const storeNumber = this.getStoreNumber(); // Store Number
       const accessToken = await this.getAccessToken();
       
       console.log('=== TILL CONFIGURATION TEST ===');
-      console.log('Business ShortCode:', businessShortCode);
+      console.log('Agent Number (BusinessShortCode):', businessShortCode);
+      console.log('Store Number (PartyB):', storeNumber);
       console.log('Environment:', this.environment);
       console.log('Access Token Status:', accessToken ? 'Valid' : 'Invalid');
       console.log('STK Shortcode:', process.env.MPESA_STK_SHORTCODE || 'Not set (using main shortcode)');
+      console.log('Store Number Env Var:', process.env.MPESA_STORE_NUMBER || 'Not set (using Agent Number)');
       console.log('Main Shortcode:', this.shortcode);
       console.log('===============================');
 
       return {
         success: true,
-        businessShortCode,
+        agentNumber: businessShortCode,
+        storeNumber: storeNumber,
         environment: this.environment,
         accessTokenValid: !!accessToken,
         stkShortcode: process.env.MPESA_STK_SHORTCODE || 'Not set',
+        storeNumberEnvVar: process.env.MPESA_STORE_NUMBER || 'Not set',
         mainShortcode: this.shortcode,
         transactionType: 'CustomerBuyGoodsOnline',
         callbackUrl: process.env.MPESA_CALLBACK_URL || 'https://caffeinated-thoughts-backend.onrender.com/api/v1/mpesa/callback',
