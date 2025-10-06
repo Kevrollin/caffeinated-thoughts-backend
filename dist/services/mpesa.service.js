@@ -180,15 +180,8 @@ export class MpesaService {
         return /^254[17]\d{8}$/.test(cleaned);
     }
     getBusinessShortCode() {
-        // For Business Till STK Push, use the main business shortcode
-        // Check if there's a specific STK Push shortcode configured
-        const stkShortcode = process.env.MPESA_SHORTCODE;
-        if (stkShortcode) {
-            console.log('Using STK-specific shortcode:', stkShortcode);
-            return parseInt(stkShortcode);
-        }
-        // For Business Till, use the main shortcode
-        console.log('Using main business shortcode:', this.shortcode);
+        // For Business Till, use the main business shortcode from environment
+        console.log('Using Business Till shortcode from MPESA_SHORTCODE:', this.shortcode);
         return parseInt(this.shortcode);
     }
     getStoreNumber() {
@@ -246,8 +239,8 @@ export class MpesaService {
             console.log('Business Till Type: Business Till (not PayBill)');
             console.log('Environment:', this.environment);
             console.log('Access Token Status:', accessToken ? 'Valid' : 'Invalid');
-            console.log('STK Shortcode:', process.env.MPESA_STK_SHORTCODE || 'Not set (using main business shortcode)');
-            console.log('Main Business Shortcode:', this.shortcode);
+            console.log('MPESA_SHORTCODE from env:', process.env.MPESA_SHORTCODE);
+            console.log('Business Till Number from constructor:', this.shortcode);
             console.log('Transaction Type: CustomerBuyGoodsOnline');
             console.log('==========================================');
             return {
@@ -257,8 +250,8 @@ export class MpesaService {
                 tillType: 'Business Till',
                 environment: this.environment,
                 accessTokenValid: !!accessToken,
-                stkShortcode: process.env.MPESA_STK_SHORTCODE || 'Not set (using main business shortcode)',
-                mainBusinessShortcode: this.shortcode,
+                mpesaShortcodeEnv: process.env.MPESA_SHORTCODE,
+                businessTillFromConstructor: this.shortcode,
                 transactionType: 'CustomerBuyGoodsOnline',
                 callbackUrl: process.env.MPESA_CALLBACK_URL || 'https://caffeinated-thoughts-backend.onrender.com/api/v1/mpesa/callback',
             };
