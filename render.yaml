@@ -38,7 +38,7 @@ services:
       - key: MIN_COFFEE_AMOUNT
         value: 50
       - key: CORS_ORIGIN
-        value: https://caffeinated-thoughts-five.vercel.app,http://localhost:8080
+        value: https://patch-notes-dev.vercel.app,https://caffeinated-thoughts-five.vercel.app,http://localhost:8080
       - key: ADMIN_EMAIL
         value: kelvinmukaria2023@gmail.com
       - key: ADMIN_PASSWORD

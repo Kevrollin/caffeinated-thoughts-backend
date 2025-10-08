@@ -57,7 +57,7 @@ MIN_COFFEE_AMOUNT=50
 
 #### CORS & Admin:
 ```
-CORS_ORIGIN=https://caffeinated-thoughts-five.vercel.app,http://localhost:8080
+CORS_ORIGIN=https://patch-notes-dev.vercel.app,https://caffeinated-thoughts-five.vercel.app,http://localhost:8080
 ADMIN_EMAIL=kelvinmukaria2023@gmail.com
 ADMIN_PASSWORD=Kevdev@2025
 ```

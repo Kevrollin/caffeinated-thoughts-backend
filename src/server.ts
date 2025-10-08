@@ -35,7 +35,8 @@ export function createServer() {
         ? process.env.CORS_ORIGIN.split(',')
         : [
             "http://localhost:8080", // local dev
-            "https://caffeinated-thoughts-five.vercel.app", // Vercel frontend
+            "https://patch-notes-dev.vercel.app", // New PatchNotes frontend
+            "https://caffeinated-thoughts-five.vercel.app", // Old frontend
             "http://localhost:3000" // local frontend fallback
           ],
       credentials: true,
