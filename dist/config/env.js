@@ -29,4 +29,9 @@ export const env = {
         email: process.env.ADMIN_EMAIL || 'admin@example.com',
         password: process.env.ADMIN_PASSWORD || 'changemeStrong!1',
     },
+    unsplash: {
+        accessKey: process.env.UNSPLASH_ACCESS_KEY || '',
+        secretKey: process.env.UNSPLASH_SECRET_KEY || '',
+        appId: process.env.UNSPLASH_APP_ID || '',
+    },
 };
