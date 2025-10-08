@@ -1,7 +1,7 @@
 export const openapiSpec = {
   openapi: '3.0.3',
   info: {
-    title: 'Caffeinated Thoughts API',
+    title: 'PatchNotes API',
     version: '1.0.0',
     description: 'Blog platform API for posts, auth, payments (M-Pesa), uploads.'
   },

@@ -5,6 +5,6 @@ const app = createServer();
 
 app.listen(port, () => {
   // eslint-disable-next-line no-console
-  console.log(`Caffeinated Thoughts API listening on port ${port}`);
+  console.log(`PatchNotes API listening on port ${port}`);
 });
 

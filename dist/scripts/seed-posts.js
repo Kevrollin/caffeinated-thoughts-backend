@@ -18,11 +18,11 @@ async function main() {
     // Create sample posts
     const samplePosts = [
         {
-            title: 'Welcome to Caffeinated Thoughts',
-            slug: 'welcome-to-caffeinated-thoughts',
-            contentMarkdown: `# Welcome to Caffeinated Thoughts
+            title: 'Welcome to PatchNotes',
+            slug: 'welcome-to-patchnotes',
+            contentMarkdown: `# Welcome to PatchNotes
 
-This is your first post on the Caffeinated Thoughts blog platform. Here you can share your coffee-fueled ideas and insights.
+This is your first post on the PatchNotes blog platform. Here you can share your latest updates, insights, and tech discussions.
 
 ## Features
 
