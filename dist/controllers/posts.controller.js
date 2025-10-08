@@ -1,4 +1,5 @@
 import { prisma } from '../services/prisma.js';
+import { NewsletterService } from '../services/newsletter.service.js';
 import { z } from 'zod';
 const paginationSchema = z.object({
     limit: z.coerce.number().int().min(1).max(100).default(10),
@@ -127,11 +128,32 @@ export const PostsController = {
                 publishedAt: body.status === 'PUBLISHED' ? new Date() : null,
             },
         });
+        // Send newsletter notification if post is published
+        if (body.status === 'PUBLISHED') {
+            try {
+                const result = await NewsletterService.sendNewsletterToAllSubscribers({
+                    title: post.title,
+                    excerpt: post.excerpt || '',
+                    content: post.contentMarkdown,
+                    slug: post.slug
+                });
+                console.log(`Newsletter sent: ${result.sent}/${result.total} emails sent successfully`);
+            }
+            catch (error) {
+                console.error('Failed to send newsletter notification:', error);
+                // Don't fail the post creation if newsletter fails
+            }
+        }
         return res.status(201).json({ post });
     },
     update: async (req, res) => {
         const { id } = req.params;
         const body = upsertSchema.partial().parse(req.body);
+        // Get the current post to check if it's being published for the first time
+        const currentPost = await prisma.post.findUnique({
+            where: { id },
+            select: { status: true, publishedAt: true }
+        });
         const post = await prisma.post.update({
             where: { id },
             data: {
@@ -140,6 +162,24 @@ export const PostsController = {
                 publishedAt: body.status === 'PUBLISHED' ? new Date() : undefined,
             },
         });
+        // Send newsletter notification if post is being published for the first time
+        if (body.status === 'PUBLISHED' &&
+            currentPost?.status !== 'PUBLISHED' &&
+            !currentPost?.publishedAt) {
+            try {
+                const result = await NewsletterService.sendNewsletterToAllSubscribers({
+                    title: post.title,
+                    excerpt: post.excerpt || '',
+                    content: post.contentMarkdown,
+                    slug: post.slug
+                });
+                console.log(`Newsletter sent: ${result.sent}/${result.total} emails sent successfully`);
+            }
+            catch (error) {
+                console.error('Failed to send newsletter notification:', error);
+                // Don't fail the post update if newsletter fails
+            }
+        }
         return res.json({ post });
     },
     remove: async (req, res) => {
