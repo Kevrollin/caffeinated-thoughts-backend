@@ -67,6 +67,20 @@ export const PostsController = {
     return res.json({ post });
   },
 
+  getById: async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const post = await prisma.post.findUnique({ 
+      where: { id },
+      include: {
+        author: {
+          select: { id: true, name: true, email: true }
+        }
+      }
+    });
+    if (!post) return res.status(404).json({ error: { message: 'Post not found', code: 'NOT_FOUND' } });
+    return res.json({ post });
+  },
+
   create: async (req: Request, res: Response) => {
     const body = upsertSchema.parse(req.body);
     const slugBase = body.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
