@@ -5,6 +5,7 @@ import { ThreadsController } from '../../controllers/threads.controller.js';
 export default Router()
   .get('/threads', ThreadsController.list)
   .get('/threads/:slug', ThreadsController.getBySlug)
+  .get('/admin/threads/:id', requireAuth, requireAdmin, ThreadsController.getById)
   .post('/admin/threads', requireAuth, requireAdmin, ThreadsController.create)
   .put('/admin/threads/:id', requireAuth, requireAdmin, ThreadsController.update)
   .delete('/admin/threads/:id', requireAuth, requireAdmin, ThreadsController.remove)

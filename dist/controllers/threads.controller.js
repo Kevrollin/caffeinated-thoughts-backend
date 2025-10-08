@@ -71,6 +71,34 @@ export const ThreadsController = {
         }
         return res.json({ thread });
     },
+    getById: async (req, res) => {
+        const { id } = req.params;
+        const thread = await prisma.thread.findUnique({
+            where: { id },
+            include: {
+                author: {
+                    select: { id: true, name: true, email: true }
+                },
+                posts: {
+                    orderBy: { orderInThread: 'asc' },
+                    select: {
+                        id: true,
+                        title: true,
+                        slug: true,
+                        orderInThread: true,
+                        status: true
+                    }
+                },
+                _count: {
+                    select: { posts: true }
+                }
+            }
+        });
+        if (!thread) {
+            return res.status(404).json({ message: 'Thread not found' });
+        }
+        return res.json({ thread });
+    },
     create: async (req, res) => {
         const body = upsertSchema.parse(req.body);
         const slugBase = body.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
