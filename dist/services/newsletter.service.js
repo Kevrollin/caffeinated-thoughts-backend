@@ -5,12 +5,12 @@ export class NewsletterService {
         try {
             const emailData = {
                 to_email: subscriberEmail,
-                subject: `☕ Fresh Brew: ${articleData.title}`,
+                subject: `📝 New Update: ${articleData.title}`,
                 article_title: articleData.title,
                 article_excerpt: articleData.excerpt || '',
                 article_content: this.truncateContent(articleData.content, 200),
                 article_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/post/${articleData.slug}`,
-                site_name: 'Caffeinated Thoughts',
+                site_name: 'PatchNotes',
                 unsubscribe_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}`
             };
             // For now, we'll use a simple fetch to EmailJS
