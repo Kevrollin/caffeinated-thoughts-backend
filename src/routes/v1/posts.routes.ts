@@ -4,6 +4,7 @@ import { PostsController } from '../../controllers/posts.controller.js';
 
 export default Router()
   .get('/posts', PostsController.list)
+  .get('/posts/categories', PostsController.getCategories)
   .get('/posts/:slug', PostsController.getBySlug)
   .get('/admin/posts/:id', requireAuth, requireAdmin, PostsController.getById)
   .post('/admin/posts', requireAuth, requireAdmin, PostsController.create)

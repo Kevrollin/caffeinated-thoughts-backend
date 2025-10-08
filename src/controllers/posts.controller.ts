@@ -69,7 +69,7 @@ export const PostsController = {
 
   getById: async (req: Request, res: Response) => {
     const { id } = req.params;
-    const post = await prisma.post.findUnique({ 
+    const post = await prisma.post.findUnique({
       where: { id },
       include: {
         author: {
@@ -79,6 +79,46 @@ export const PostsController = {
     });
     if (!post) return res.status(404).json({ error: { message: 'Post not found', code: 'NOT_FOUND' } });
     return res.json({ post });
+  },
+
+  getCategories: async (req: Request, res: Response) => {
+    try {
+      // Get all unique categories from published posts
+      const categories = await prisma.post.findMany({
+        where: {
+          status: 'PUBLISHED',
+          category: { not: null }
+        },
+        select: { category: true },
+        distinct: ['category']
+      });
+
+      // Extract category names and filter out null values
+      const categoryNames = categories
+        .map(c => c.category)
+        .filter((category): category is string => category !== null)
+        .sort();
+
+      // Add some default categories if none exist
+      const defaultCategories = [
+        'Technology',
+        'Programming',
+        'Web Development',
+        'Tutorials',
+        'News',
+        'Opinion',
+        'Reviews',
+        'Guides'
+      ];
+
+      // Combine existing categories with defaults, removing duplicates
+      const allCategories = Array.from(new Set([...categoryNames, ...defaultCategories])).sort();
+
+      return res.json({ categories: allCategories });
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      return res.status(500).json({ error: { message: 'Failed to fetch categories', code: 'INTERNAL_ERROR' } });
+    }
   },
 
   create: async (req: Request, res: Response) => {
