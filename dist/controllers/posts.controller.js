@@ -89,10 +89,10 @@ export const PostsController = {
                 select: { category: true },
                 distinct: ['category']
             });
-            // Extract category names and filter out null values
+            // Extract category names and filter out null/empty values
             const categoryNames = categories
                 .map(c => c.category)
-                .filter((category) => category !== null)
+                .filter((category) => category !== null && category.trim() !== '')
                 .sort();
             // Add some default categories if none exist
             const defaultCategories = [
