@@ -63,6 +63,7 @@ export const ThreadsController = {
             id: true,
             title: true,
             slug: true,
+            contentMarkdown: true,
             excerpt: true,
             featuredImageUrl: true,
             orderInThread: true,
