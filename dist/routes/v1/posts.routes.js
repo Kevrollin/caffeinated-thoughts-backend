@@ -8,4 +8,6 @@ export default Router()
     .get('/admin/posts/:id', requireAuth, requireAdmin, PostsController.getById)
     .post('/admin/posts', requireAuth, requireAdmin, PostsController.create)
     .put('/admin/posts/:id', requireAuth, requireAdmin, PostsController.update)
-    .delete('/admin/posts/:id', requireAuth, requireAdmin, PostsController.remove);
+    .delete('/admin/posts/:id', requireAuth, requireAdmin, PostsController.remove)
+    .post('/admin/posts/:id/promote-to-general', requireAuth, requireAdmin, PostsController.promoteToGeneral)
+    .post('/admin/posts/:id/make-thread-only', requireAuth, requireAdmin, PostsController.makeThreadOnly);

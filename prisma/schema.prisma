@@ -48,6 +48,7 @@ model Post {
   threadId         String?
   thread           Thread?       @relation(fields: [threadId], references: [id])
   orderInThread    Int?          // Order within the thread
+  isThreadOnly     Boolean       @default(false) // If true, only shows in thread, not general posts
   transactions     Transaction[]
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt

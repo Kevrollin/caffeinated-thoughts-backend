@@ -22,6 +22,9 @@ const upsertSchema = z.object({
         message: "Invalid URL - must be a full URL or a path starting with /assets/"
     }),
     status: z.enum(['DRAFT', 'PUBLISHED']).default('DRAFT'),
+    threadId: z.string().optional(), // For linking posts to threads
+    orderInThread: z.number().int().optional(), // Order within the thread
+    isThreadOnly: z.boolean().optional(), // If true, only shows in thread, not general posts
 });
 export const PostsController = {
     list: async (req, res) => {
@@ -29,7 +32,12 @@ export const PostsController = {
             const { limit, cursor } = paginationSchema.parse(req.query);
             const isAdmin = req.path.startsWith('/admin');
             const posts = await prisma.post.findMany({
-                where: isAdmin ? {} : { status: 'PUBLISHED' },
+                where: isAdmin
+                    ? {}
+                    : {
+                        status: 'PUBLISHED',
+                        isThreadOnly: false // Exclude thread-only posts from general posts list
+                    },
                 orderBy: { createdAt: 'desc' },
                 take: limit + 1,
                 cursor: cursor ? { id: cursor } : undefined,
@@ -119,14 +127,29 @@ export const PostsController = {
         const body = upsertSchema.parse(req.body);
         const slugBase = body.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         const slug = `${slugBase}-${Math.random().toString(36).slice(2, 7)}`;
+        // Prepare post data
+        const postData = {
+            title: body.title,
+            contentMarkdown: body.contentMarkdown,
+            tags: body.tags,
+            category: body.category,
+            featuredImageUrl: body.featuredImageUrl === '' ? null : body.featuredImageUrl,
+            status: body.status,
+            slug,
+            authorId: res.locals.userId,
+            publishedAt: body.status === 'PUBLISHED' ? new Date() : null,
+        };
+        // Add thread-related fields if provided
+        if (body.threadId) {
+            postData.threadId = body.threadId;
+            // If creating from thread interface, mark as thread-only by default
+            postData.isThreadOnly = body.isThreadOnly !== undefined ? body.isThreadOnly : true;
+        }
+        if (body.orderInThread !== undefined) {
+            postData.orderInThread = body.orderInThread;
+        }
         const post = await prisma.post.create({
-            data: {
-                ...body,
-                featuredImageUrl: body.featuredImageUrl === '' ? null : body.featuredImageUrl,
-                slug,
-                authorId: res.locals.userId,
-                publishedAt: body.status === 'PUBLISHED' ? new Date() : null,
-            },
+            data: postData,
         });
         // Send newsletter notification if post is published
         if (body.status === 'PUBLISHED') {
@@ -186,5 +209,45 @@ export const PostsController = {
         const { id } = req.params;
         await prisma.post.delete({ where: { id } });
         return res.status(204).send();
+    },
+    // Promote a thread-only post to general posts
+    promoteToGeneral: async (req, res) => {
+        const { id } = req.params;
+        try {
+            const post = await prisma.post.update({
+                where: { id },
+                data: { isThreadOnly: false },
+                include: {
+                    author: {
+                        select: { id: true, name: true, email: true }
+                    }
+                }
+            });
+            return res.json({ post });
+        }
+        catch (error) {
+            console.error('Error promoting post to general:', error);
+            return res.status(500).json({ error: { message: 'Failed to promote post', code: 'INTERNAL_ERROR' } });
+        }
+    },
+    // Make a general post thread-only
+    makeThreadOnly: async (req, res) => {
+        const { id } = req.params;
+        try {
+            const post = await prisma.post.update({
+                where: { id },
+                data: { isThreadOnly: true },
+                include: {
+                    author: {
+                        select: { id: true, name: true, email: true }
+                    }
+                }
+            });
+            return res.json({ post });
+        }
+        catch (error) {
+            console.error('Error making post thread-only:', error);
+            return res.status(500).json({ error: { message: 'Failed to make post thread-only', code: 'INTERNAL_ERROR' } });
+        }
     },
 };
